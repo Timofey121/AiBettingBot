@@ -1,0 +1,10 @@
+aiogram==2.24
+environs~=11.0.0
+exceptiongroup
+pip-chill
+pymorphy2
+pysocks
+python-dateutil
+sqlalchemy
+urllib3-secure-extra
+requests~=2.32.3
