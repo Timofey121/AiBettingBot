@@ -36,7 +36,7 @@ async def GetMoneyCard(message: types.Message):
     await Test.Q_for_get_money.set()
 
 
-@dp.message_handler(text="Qiwi️")
+@dp.message_handler(text="Qiwi")
 async def GetMoneyQiwi(message: types.Message):
     await message.answer("Напишите номер Qiwi ⤵️", reply_markup=buttons_menu)
     await Test.Q_for_get_money.set()
@@ -101,5 +101,5 @@ async def GetMoney2(message: types.Message, state: FSMContext):
         end = datetime.now() + timedelta(minutes=int(time))
         await add_get_money(message.from_user.id, end.strftime("%Y-%m-%d %H:%M"))
     except:
-        await message.answer("Введена некорректная сумма. Повтори запрос позже")
+        await message.answer("Введена некорректная сумма. Повтори запрос позже", reply_markup=main_keyboard)
         await state.finish()
