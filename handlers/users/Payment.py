@@ -85,24 +85,28 @@ async def Help(message: types.Message):
 
 @dp.message_handler(text="Проверить оплату")
 async def Dnenne(message: types.Message):
-    tg_id = message.from_user.id
-    id, summ = list(await get_payment(tg_id))[0][1], list(await get_payment(tg_id))[0][2]
-    url = f"https://papi.skycrypto.net/rest/v2/purchases/{str(id)}"
-    response = requests.get(url, headers={'Authorization': f'Token {token}'})
-    if response.json()["status"] == 1:
-        info = list(await get_lk(message.from_user.id))[0]
-        balance = info[1]
-        await update_only_balance(tg_id, int(balance) + int(summ))
-        await delete_payment(tg_id)
-        await message.answer("Оплата успешно прошла", reply_markup=main_keyboard)
-    else:
-        await message.answer(
-            "К сожалению, Вы не оплатили. Или, возможно, платеж еще обрабатвыется, как только он будет "
-            "успешен - деньги автоматически поступят к Вам на счет.", reply_markup=main_keyboard)
+    try:
+        tg_id = message.from_user.id
+        id, summ = list(await get_payment(tg_id))[-1][1], list(await get_payment(tg_id))[-1][2]
+        url = f"https://papi.skycrypto.net/rest/v2/purchases/{str(id)}"
+        response = requests.get(url, headers={'Authorization': f'Token {token}'})
+        if str(response.json()["status"]) == "2":
+            info = list(await get_lk(message.from_user.id))[0]
+            balance = info[1]
+            await delete_payment(tg_id, id)
+            await update_only_balance(tg_id, int(balance) + int(summ))
+            await message.answer("Оплата успешно прошла", reply_markup=main_keyboard)
+        else:
+            await message.answer(
+                "К сожалению, Вы не оплатили. Или, возможно, платеж еще обрабатвыется, как только он будет "
+                "успешен - деньги автоматически поступят к Вам на счет.", reply_markup=main_keyboard)
+    except Exception as ex:
+        await dp.bot.send_message(950866927, ex)
 
 
 @dp.message_handler(text="Отмена платежа")
 async def Cancel(message: types.Message):
     tg_id = message.from_user.id
-    await delete_payment(tg_id)
+    id, summ = list(await get_payment(tg_id))[-1][1], list(await get_payment(tg_id))[-1][2]
+    await delete_payment(tg_id, id)
     await message.answer("Платеж отменен", reply_markup=main_keyboard)

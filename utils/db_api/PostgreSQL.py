@@ -212,10 +212,10 @@ async def delete_stop(telegram_id):
     con.close()
 
 
-async def delete_payment(telegram_id):
+async def delete_payment(telegram_id, status):
     main()
     cur.execute(
-        f"DELETE FROM payment WHERE telegram_id = '{telegram_id}'")
+        f"DELETE FROM payment WHERE telegram_id = '{telegram_id}' AND status='{status}'")
     con.commit()
     con.close()
 

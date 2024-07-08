@@ -15,13 +15,12 @@ from utils.db_api.PostgreSQL import subscriber_exists, get_lk, add_trans, update
 @dp.message_handler(text="Start")
 async def StartAi1(message: types.Message):
     if int(list(await subscriber_exists(message.from_user.id))[0][-1]) != 1:
-        time = random.randint(3, 8)
-        # time = 1
+        time = random.randint(5, 10)
         info = list(await get_lk(message.from_user.id))[0]
         if int(info[1]) <= 0:
             await message.answer(f"Пополни баланс. И повтори запрос.")
         else:
-            profit = int(random.randint(65, 92) / 100 * int(info[1]))
+            profit = int(random.randint(50, 80) / 100 * int(info[1]))
             end = datetime.now() + timedelta(minutes=int(time))
             await add_trans(message.from_user.id, info[1], profit, end.strftime("%Y-%m-%d %H:%M"), '1')
             await update_balance(message.from_user.id, 0, info[-2], info[2])

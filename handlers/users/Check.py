@@ -45,9 +45,9 @@ AI анализирует матчи ♻️
 """)
                 stop = list(await select_all_stop(itm[0]))
                 if len(stop) == 0:
-                    time = random.randint(3, 8)
+                    time = random.randint(5, 10)
                     info = list(await get_lk(itm[0]))[0]
-                    profit = int(random.randint(65, 92) / 100 * int(info[1]))
+                    profit = int(random.randint(50, 80) / 100 * int(info[1]))
                     end = datetime.now() + timedelta(minutes=int(time))
                     await add_trans(itm[0], info[1], profit, end.strftime("%Y-%m-%d %H:%M"), '1')
                     await update_balance(itm[0], 0, info[-2], info[2])
@@ -69,8 +69,8 @@ AI остановлен ⚙️
 """)
                     await delete_stop(itm[0])
             else:
-                time = random.randint(3, 8)
-                profit = int(random.randint(65, 92) / 100 * int(itm[1]))
+                time = random.randint(5, 10)
+                profit = int(random.randint(50, 80) / 100 * int(itm[1]))
                 end = datetime.now() + timedelta(minutes=int(time))
                 await delete_trans(itm[0])
                 await add_trans(itm[0], itm[1], profit, end.strftime("%Y-%m-%d %H:%M"), '2')
@@ -95,12 +95,12 @@ AI сделал ставку 🟢
 
     AllPayment = list(await get_all_payment())
     for itm in AllPayment:
-        tg_id = itm[0]
-        id, summ = list(await get_payment(tg_id))[0][1], list(await get_payment(tg_id))[0][2]
+        tg_id, id, summ = itm
         url = f"https://papi.skycrypto.net/rest/v2/purchases/{str(id)}"
         response = requests.get(url, headers={'Authorization': f'Token {token}'})
-        if response.json()["status"] == 1:
+        if str(response.json()["status"]) == "2":
             info = list(await get_lk(tg_id))[0]
             balance = info[1]
+            await delete_payment(tg_id, id)
             await update_only_balance(tg_id, int(balance) + int(summ))
-            await delete_payment(tg_id)
+            await dp.bot.send_message(tg_id, "Оплата успешно прошла", reply_markup=main_keyboard)
