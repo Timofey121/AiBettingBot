@@ -10,14 +10,13 @@ from aiogram.types import ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold, hunderline, hlink
 import os, shutil
 
+from data.config import SkyPayToken
 from keyboards.default.buttons_menu import main_keyboard
 from keyboards.default.done import done
 from loader import dp
 from states import Test
 from utils.db_api.PostgreSQL import subscriber_exists, get_trans, update_balance, delete_trans, select_all_rev, get_lk, \
     update_rev_balance, add_stop, add_summ, get_payment, update_only_balance, delete_payment
-
-token = "ae83897f7ad94aaeb0e31330932d6c7c"
 
 
 def random_alphanumeric_string(length):
@@ -52,7 +51,7 @@ async def Payment2(message: types.Message, state: FSMContext):
                 "is_currency_amount": True,
             }
             response = requests.post(url, json=data,
-                                     headers={'Authorization': f'Token {token}'})
+                                     headers={'Authorization': f'Token {SkyPayToken}'})
 
             keyboard = types.InlineKeyboardMarkup()
             web_app_test = types.WebAppInfo(url=response.json()['web_link'])
@@ -89,7 +88,7 @@ async def Dnenne(message: types.Message):
         tg_id = message.from_user.id
         id, summ = list(await get_payment(tg_id))[-1][1], list(await get_payment(tg_id))[-1][2]
         url = f"https://papi.skycrypto.net/rest/v2/purchases/{str(id)}"
-        response = requests.get(url, headers={'Authorization': f'Token {token}'})
+        response = requests.get(url, headers={'Authorization': f'Token {SkyPayToken}'})
         if str(response.json()["status"]) == "2":
             info = list(await get_lk(message.from_user.id))[0]
             balance = info[1]

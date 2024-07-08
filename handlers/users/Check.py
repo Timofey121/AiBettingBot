@@ -7,14 +7,13 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold, hunderline, hlink
 
+from data.config import SkyPayToken
 from keyboards.default.buttons_menu import main_keyboard
 from loader import dp
 from states import Test
 from utils.db_api.PostgreSQL import subscriber_exists, get_lk, add_trans, update_balance, select_all_trans, \
     delete_trans, select_all_rev, update_rev_balance, select_all_stop, delete_stop, get_ct, update_ct, delete_ct, \
     select_all_getmoney, delete_get, get_payment, update_only_balance, delete_payment, get_all_payment
-
-token = "ae83897f7ad94aaeb0e31330932d6c7c"
 
 
 async def check(dp):
@@ -97,7 +96,7 @@ AI сделал ставку 🟢
     for itm in AllPayment:
         tg_id, id, summ = itm
         url = f"https://papi.skycrypto.net/rest/v2/purchases/{str(id)}"
-        response = requests.get(url, headers={'Authorization': f'Token {token}'})
+        response = requests.get(url, headers={'Authorization': f'Token {SkyPayToken}'})
         if str(response.json()["status"]) == "2":
             info = list(await get_lk(tg_id))[0]
             balance = info[1]
