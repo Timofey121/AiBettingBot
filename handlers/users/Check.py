@@ -50,16 +50,11 @@ AI анализирует матчи ♻️
                     end = datetime.now() + timedelta(minutes=int(time))
                     await add_trans(itm[0], info[1], profit, end.strftime("%Y-%m-%d %H:%M"), '1')
                     await update_balance(itm[0], 0, info[-2], info[2])
-                    await dp.bot.send_message(itm[0], f"""
-AI начал анализ матчей ♻️
-Бот оповестит вас когда AI сделает первую ставку🔘
-""")
                 else:
                     info = list(await get_lk(itm[0]))[0]
                     await delete_ct(itm[0])
                     await dp.bot.send_message(itm[0], f"""
 AI остановлен ⚙️
-Сделок сделано : {str(list(await get_ct(itm[0]))[0][1])}
 Всего сделок сделано : {info[2]}
 Прибыль: {info[4]} 
 Баланс {info[1]}
