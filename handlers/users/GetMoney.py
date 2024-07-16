@@ -22,7 +22,23 @@ from utils.db_api.PostgreSQL import subscriber_exists, get_trans, update_balance
 @dp.message_handler(text="Вывод♻️")
 async def GetMoney(message: types.Message):
     if int(list(await subscriber_exists(message.from_user.id))[0][-1]) != 1:
-        await message.answer("""
+        if len(list(await get_trans(str(message.from_user.id)))) != 0:
+            await message.answer(f"""
+Бот в работе ❗️
+🗣 Дождитесь окончания ставок и нажмите stop.
+Только после этого вы сможете пользоваться остальными разделами :
+Личный кабинет 
+Вывод 
+Support""")
+        else:
+            balance = list(await get_lk(message.from_user.id))[0][1]
+            if int(balance) == 0:
+                await message.answer(f"""
+📲Вывод невозможен 
+Баланс: 0
+🗣Пополните баланс .""")
+            else:
+                await message.answer("""
 Заказ выплаты 📲
 Выберите удобный способ ⤵️
 """, reply_markup=get_money)
@@ -92,14 +108,15 @@ async def GetMoney2(message: types.Message, state: FSMContext):
     info = list(await get_lk(message.from_user.id))[0]
     try:
         await update_only_balance(message.from_user.id, int(info[1]) - int(message.text))
+        time = 15
+        end = datetime.now() + timedelta(minutes=int(time))
+        await add_get_money(message.from_user.id, end.strftime("%Y-%m-%d %H:%M"))
         await message.answer("""
 Вывод создан 🟢
 Обработка платежа от 
 1 - 10 минут ♻️
 В зависимости от загруженности системы ❗️""", reply_markup=main_keyboard)
-        time = 15
-        end = datetime.now() + timedelta(minutes=int(time))
-        await add_get_money(message.from_user.id, end.strftime("%Y-%m-%d %H:%M"))
     except:
         await message.answer("Введена некорректная сумма. Повтори запрос позже", reply_markup=main_keyboard)
-        await state.finish()
+    await state.finish()
+

@@ -18,7 +18,7 @@ async def StartAi1(message: types.Message):
         time = random.randint(5, 10)
         info = list(await get_lk(message.from_user.id))[0]
         if int(info[1]) <= 0:
-            await message.answer(f"Пополни баланс. И повтори запрос.")
+            await message.answer(f"🗣Для начала работы необходимо пополнить баланс🔘")
         else:
             profit = int(random.randint(50, 80) / 100 * int(info[1]))
             end = datetime.now() + timedelta(minutes=int(time))

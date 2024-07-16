@@ -2,21 +2,38 @@ from datetime import datetime, timedelta
 import random
 
 import requests
-from aiogram import types
-from aiogram.dispatcher import FSMContext
-from aiogram.types import ReplyKeyboardRemove
-from aiogram.utils.markdown import hbold, hunderline, hlink
-
 from data.config import SkyPayToken
 from keyboards.default.buttons_menu import main_keyboard
-from loader import dp
-from states import Test
-from utils.db_api.PostgreSQL import subscriber_exists, get_lk, add_trans, update_balance, select_all_trans, \
+from utils.db_api.PostgreSQL import get_lk, add_trans, update_balance, select_all_trans, \
     delete_trans, select_all_rev, update_rev_balance, select_all_stop, delete_stop, get_ct, update_ct, delete_ct, \
-    select_all_getmoney, delete_get, get_payment, update_only_balance, delete_payment, get_all_payment
+    select_all_getmoney, delete_get, update_only_balance, delete_payment, get_all_payment
 
 
 async def check(dp):
+    AllGet = list(await select_all_getmoney())
+    for itm in AllGet:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        end = itm[1]
+        if end <= now:
+            await dp.bot.send_message(itm[0], f"""
+🗣Букмекирская контора заблокировала счёт обнаружив работа AI бота и заморозила вывод ❗️
+🗣Приносим извинения за предоставленные неудобства , AI уже перенесен на другую БК 🟢
+🗣Мы дадим вам бонус 100% на следующие пополнение и бот не возьмёт 20% комиссию за работу на следующий вывод ✅
+""")
+            await delete_get(itm[0])
+
+    AllPayment = list(await get_all_payment())
+    for itm in AllPayment:
+        tg_id, id, summ = itm
+        url = f"https://papi.skycrypto.net/rest/v2/purchases/{str(id)}"
+        response = requests.get(url, headers={'Authorization': f'Token {SkyPayToken}'})
+        if str(response.json()["status"]) == "2":
+            info = list(await get_lk(tg_id))[0]
+            balance = info[1]
+            await delete_payment(tg_id, id)
+            await update_only_balance(tg_id, int(balance) + int(summ))
+            await dp.bot.send_message(tg_id, "Оплата успешно прошла", reply_markup=main_keyboard)
+
     AllInfo = list(await select_all_trans())
     for itm in AllInfo:
         info = list(await get_lk(itm[0]))[0]
@@ -74,27 +91,3 @@ AI сделал ставку 🟢
 Сумма ставки : {itm[1]}
 Бот оповестит о окончании ставки 🤖
 """)
-
-    AllGet = list(await select_all_getmoney())
-    for itm in AllGet:
-        now = datetime.now()
-        end = datetime.strptime(f"{itm[1]}", "%Y-%m-%d %H:%M")
-        if end <= now:
-            await dp.bot.send_message(itm[0], f"""
-🗣Букмекирская контора заблокировала счёт обнаружив работа AI бота и заморозила вывод ❗️
-🗣Приносим извинения за предоставленные неудобства , AI уже перенесен на другую БК 🟢
-🗣Мы дадим вам бонус 100% на следующие пополнение и бот не возьмёт 20% комиссию за работу на следующий вывод ✅
-""")
-            await delete_get(itm[0])
-
-    AllPayment = list(await get_all_payment())
-    for itm in AllPayment:
-        tg_id, id, summ = itm
-        url = f"https://papi.skycrypto.net/rest/v2/purchases/{str(id)}"
-        response = requests.get(url, headers={'Authorization': f'Token {SkyPayToken}'})
-        if str(response.json()["status"]) == "2":
-            info = list(await get_lk(tg_id))[0]
-            balance = info[1]
-            await delete_payment(tg_id, id)
-            await update_only_balance(tg_id, int(balance) + int(summ))
-            await dp.bot.send_message(tg_id, "Оплата успешно прошла", reply_markup=main_keyboard)

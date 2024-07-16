@@ -9,21 +9,30 @@ from keyboards.default.buttons_menu import main_keyboard
 from keyboards.default.back_to_menu import buttons_menu
 from loader import dp
 from states import Test
-from utils.db_api.PostgreSQL import subscriber_exists
+from utils.db_api.PostgreSQL import subscriber_exists, get_trans
 
 
 @dp.message_handler(text="Support🧑‍💻", state=None)
 async def technical_support(message: types.Message):
     if int(list(await subscriber_exists(message.from_user.id))[0][-1]) != 1:
-        if message.from_user.username is None:
-            await message.answer(f"Привет, к сожалению, мы не сможем ответить Вам, т.к. у Вас нет имени пользователя!"
-                                 f"Укажите пожалуйста его в настройках, чтобы мы смогли с Вами связаться!")
-            photo = open('handlers/users/img.png', 'rb')
-            await message.answer_photo(photo, reply_markup=main_keyboard)
+        if len(list(await get_trans(str(message.from_user.id)))) != 0:
+            await message.answer(f"""
+Бот в работе ❗️
+🗣 Дождитесь окончания ставок и нажмите stop.
+Только после этого вы сможете пользоваться остальными разделами :
+Личный кабинет 
+Вывод 
+Support""")
         else:
-            await message.answer("Привет, расскажи в чем проблема? Мы ответим Вам, как только закончим"
-                                 " с предыдущем вопросом!", reply_markup=buttons_menu)
-            await Test.Q_for_tech_support.set()
+            if message.from_user.username is None:
+                await message.answer(f"Привет, к сожалению, мы не сможем ответить Вам, т.к. у Вас нет имени пользователя!"
+                                     f"Укажите пожалуйста его в настройках, чтобы мы смогли с Вами связаться!")
+                photo = open('handlers/users/img.png', 'rb')
+                await message.answer_photo(photo, reply_markup=main_keyboard)
+            else:
+                await message.answer("Привет, расскажи в чем проблема? Мы ответим Вам, как только закончим"
+                                     " с предыдущем вопросом!", reply_markup=buttons_menu)
+                await Test.Q_for_tech_support.set()
     else:
         await message.answer(f"К сожалению, Вы ЗАБЛОКИРОВАНЫ!")
 

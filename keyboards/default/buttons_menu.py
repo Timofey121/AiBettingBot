@@ -8,6 +8,7 @@ main_keyboard = ReplyKeyboardMarkup(
         ],
         [
             KeyboardButton(text="Личный кабинет 💻"),
+            KeyboardButton(text="Установить валюту♻️"),
         ],
         [
             KeyboardButton(text="📲Пополнение"),

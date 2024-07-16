@@ -137,6 +137,22 @@ async def delete_ct(telegram_id):
     con.close()
 
 
+async def select_blocked_users():
+    main()
+    cur.execute(f"SELECT * FROM Registration WHERE blocked=True")
+    rows = cur.fetchall()
+    con.close()
+    return rows
+
+
+async def update_blocked_users(telegram_id, blocked):
+    main()
+    cur.execute(
+        f"UPDATE Registration SET blocked='{blocked}' WHERE telegram_id='{telegram_id}'")
+    con.commit()
+    con.close()
+
+
 async def delete_get(telegram_id):
     main()
     cur.execute(
@@ -162,6 +178,24 @@ async def add_get_money(telegram_id, end_time):
     con.close()
 
 
+async def add_get_money(telegram_id, end_time):
+    main()
+    cur.execute(
+        f"INSERT INTO GetMoney (telegram_id, time_end) "
+        f"VALUES('{telegram_id}', '{end_time}')")
+    con.commit()
+    con.close()
+
+
+async def add_currency(telegram_id, currency):
+    main()
+    cur.execute(
+        f"INSERT INTO Currency (telegram_id, currency) "
+        f"VALUES('{telegram_id}', '{currency}')")
+    con.commit()
+    con.close()
+
+
 async def update_only_balance(telegram_id, balance):
     main()
     cur.execute(
@@ -170,10 +204,27 @@ async def update_only_balance(telegram_id, balance):
     con.close()
 
 
+async def update_currency(telegram_id, currency):
+    main()
+    cur.execute(
+        f"UPDATE Currency SET currency='{currency}' WHERE telegram_id='{telegram_id}'")
+    con.commit()
+    con.close()
+
+
 async def get_trans(telegram_id):
     main()
     cur.execute(
         f"SELECT * FROM Transact WHERE telegram_id='{telegram_id}'")
+    rows = cur.fetchall()
+    con.close()
+    return rows
+
+
+async def get_currency(telegram_id):
+    main()
+    cur.execute(
+        f"SELECT * FROM Currency WHERE telegram_id='{telegram_id}'")
     rows = cur.fetchall()
     con.close()
     return rows

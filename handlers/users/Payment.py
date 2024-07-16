@@ -16,7 +16,7 @@ from keyboards.default.done import done
 from loader import dp
 from states import Test
 from utils.db_api.PostgreSQL import subscriber_exists, get_trans, update_balance, delete_trans, select_all_rev, get_lk, \
-    update_rev_balance, add_stop, add_summ, get_payment, update_only_balance, delete_payment
+    update_rev_balance, add_stop, add_summ, get_payment, update_only_balance, delete_payment, get_currency, add_currency
 
 
 def random_alphanumeric_string(length):
@@ -26,11 +26,27 @@ def random_alphanumeric_string(length):
     )
 
 
+min_currency = {
+    "rub": 1000,
+    "usd": 8,
+    "kzt": 3000,
+    "uah": 500,
+    "byn": 20,
+    "tjs": 70,
+    "azn": 10,
+    "uzs": 50000,
+}
+
+
 @dp.message_handler(text="📲Пополнение")
 async def Payment1(message: types.Message):
     if int(list(await subscriber_exists(message.from_user.id))[0][-1]) != 1:
-        await message.answer("Введите сумму на пополнение. Минимальная сумма для пополнения 1000р",
-                             reply_markup=ReplyKeyboardRemove())
+        if len(list(await get_currency(message.from_user.id))) == 0:
+            await add_currency(message.from_user.id, "rub")
+        curr = list(await get_currency(message.from_user.id))[0][1]
+        await message.answer(
+            f"Введите сумму на пополнение. Минимальная сумма для пополнения {min_currency[curr]}{curr}",
+            reply_markup=ReplyKeyboardRemove())
         await Test.Q_for_payment.set()
     else:
         await message.answer(f"К сожалению, Вы ЗАБЛОКИРОВАНЫ!")
@@ -40,14 +56,19 @@ async def Payment1(message: types.Message):
 async def Payment2(message: types.Message, state: FSMContext):
     try:
         amount = float(message.text)
-        if amount < 1000:
-            await message.answer("Введенная Вами сумма меньше 1000р. Повтори попытку с корректной суммой. >1000р")
+        curr = list(await get_currency(message.from_user.id))[0][1]
+        if amount < min_currency[curr]:
+            await message.answer(
+                f"Введенная Вами сумма меньше {min_currency[curr]}{curr} "
+                f"Повтори попытку с корректной суммой. > {min_currency[curr]}{curr}",
+                reply_markup=main_keyboard)
+            await state.finish()
         else:
             url = "https://papi.skycrypto.net/rest/v2/purchases"
             data = {
                 "amount": int(message.text),
-                "symbol": "usdt",
-                "currency": "rub",
+                "symbol": "btc",
+                "currency": str(list(await get_currency(message.from_user.id))[0][1]),
                 "is_currency_amount": True,
             }
             response = requests.post(url, json=data,
@@ -64,7 +85,9 @@ async def Payment2(message: types.Message, state: FSMContext):
             await add_summ(message.from_user.id, response.json()['payment_id'], message.text)
             await state.finish()
     except ValueError:
-        await message.answer("Некорретно введенная сумма")
+        await message.answer("Некорретно введенная сумма",
+                             reply_markup=main_keyboard)
+        await state.finish()
 
 
 @dp.message_handler(text="KILL")
