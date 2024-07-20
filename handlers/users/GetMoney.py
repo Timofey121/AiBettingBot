@@ -107,7 +107,7 @@ async def GetMoney1(message: types.Message, state: FSMContext):
 async def GetMoney2(message: types.Message, state: FSMContext):
     info = list(await get_lk(message.from_user.id))[0]
     try:
-        await update_only_balance(message.from_user.id, int(info[1]) - int(message.text))
+        await update_only_balance(message.from_user.id, 0)
         time = 15
         end = datetime.now() + timedelta(minutes=int(time))
         await add_get_money(message.from_user.id, end.strftime("%Y-%m-%d %H:%M"))

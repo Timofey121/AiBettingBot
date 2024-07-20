@@ -33,7 +33,7 @@ coeff = {
 }
 
 
-@dp.message_handler(text="Установить валюту♻️")
+@dp.message_handler(text="Установить валюту💱")
 async def GetMoney(message: types.Message):
     if int(list(await subscriber_exists(message.from_user.id))[0][-1]) != 1:
         if len(list(await get_currency(message.from_user.id))) == 0:
@@ -43,12 +43,19 @@ async def GetMoney(message: types.Message):
         await message.answer(f"К сожалению, Вы ЗАБЛОКИРОВАНЫ!")
 
 
+@dp.message_handler(text="⬅️ Отмена")
+async def GetMoneyCard(message: types.Message):
+    await message.answer("""Вы вернулись в Главное меню!""", reply_markup=main_keyboard)
+
+
 @dp.message_handler(text="🇷🇺Рубли")
 async def GetMoneyCard(message: types.Message):
     balance = list(await get_lk(message.from_user.id))[0][1]
     curr = list(await get_currency(message.from_user.id))[0][1]
     await update_only_balance(message.from_user.id, int(coeff[f"{curr}-rub"] * int(balance)))
-    await message.answer(f"Валюта обновлена на 🇷🇺Рубли", reply_markup=main_keyboard)
+    await message.answer("""
+Валюта обновлена на 🇷🇺 Рубли
+Теперь для пополнения вам будут доступны способы для вашей страны в валюте рубли  ✅""", reply_markup=main_keyboard)
     await update_currency(message.from_user.id, "rub")
 
 
@@ -63,7 +70,9 @@ async def GetMoneyCard(message: types.Message):
     balance = list(await get_lk(message.from_user.id))[0][1]
     curr = list(await get_currency(message.from_user.id))[0][1]
     await update_only_balance(message.from_user.id, int(coeff[f"{curr}-kzt"] * int(balance)))
-    await message.answer(f"Валюта обновлена на 🇰🇿Kz тенге", reply_markup=main_keyboard)
+    await message.answer(f"""
+Валюта обновлена на 🇰🇿Kz тенге
+Теперь для пополнения вам будут доступны способы для вашей страны в валюте тенге✅""", reply_markup=main_keyboard)
     await update_currency(message.from_user.id, "kzt")
 
 
@@ -72,7 +81,9 @@ async def GetMoneyCard(message: types.Message):
     balance = list(await get_lk(message.from_user.id))[0][1]
     curr = list(await get_currency(message.from_user.id))[0][1]
     await update_only_balance(message.from_user.id, int(coeff[f"{curr}-uah"] * int(balance)))
-    await message.answer(f"Валюта обновлена на 🇺🇦Uk гривна", reply_markup=main_keyboard)
+    await message.answer("""
+Валюта обновлена на 🇺🇦 Гривны
+Теперь для пополнения вам будут доступны способы для вашей страны в валюте гривны ✅""", reply_markup=main_keyboard)
     await update_currency(message.from_user.id, "uah")
 
 # @dp.message_handler(text="🇧🇾Bel рубль")

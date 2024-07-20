@@ -4,6 +4,10 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 currency = ReplyKeyboardMarkup(
     keyboard=[
         [
+            KeyboardButton(text="⬅️ Отмена"),
+            # KeyboardButton(text="🇺🇿Uz сум"),
+        ],
+        [
             KeyboardButton(text="🇷🇺Рубли"),
             # KeyboardButton(text="🇺🇿Uz сум"),
         ],
