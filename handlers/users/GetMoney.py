@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import string
 from datetime import datetime, timedelta
@@ -18,6 +19,11 @@ from states import Test
 from utils.db_api.PostgreSQL import subscriber_exists, get_trans, update_balance, delete_trans, select_all_rev, get_lk, \
     update_rev_balance, add_stop, update_only_balance, add_get_money
 
+
+async def auto_finish_state(id, state: FSMContext):
+    await asyncio.sleep(600)
+    await dp.bot.send_message(id, "Из-за длительного бездействия вы были перенаправлены в главное меню.", reply_markup=main_keyboard)
+    await state.finish()
 
 @dp.message_handler(text="Вывод♻️")
 async def GetMoney(message: types.Message):
@@ -50,30 +56,36 @@ Support""")
 async def GetMoneyCard(message: types.Message):
     await message.answer("Напишите номер Карты ⤵️", reply_markup=buttons_menu)
     await Test.Q_for_get_money.set()
+    await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
 
 @dp.message_handler(text="Qiwi")
 async def GetMoneyQiwi(message: types.Message):
     await message.answer("Напишите номер Qiwi ⤵️", reply_markup=buttons_menu)
     await Test.Q_for_get_money.set()
+    await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
+
 
 
 @dp.message_handler(text="YooMoney")
 async def GetMoneyYooMoney(message: types.Message):
     await message.answer("Напишите номер YooMoney ⤵️", reply_markup=buttons_menu)
     await Test.Q_for_get_money.set()
+    await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
 
 @dp.message_handler(text="Perfect money")
 async def GetMoneyPerfect(message: types.Message):
     await message.answer("Напишите номер Perfect money ⤵️", reply_markup=buttons_menu)
     await Test.Q_for_get_money.set()
+    await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
 
 @dp.message_handler(text="BTC")
 async def GetMoneyBTC(message: types.Message):
     await message.answer("Напишите номер BTC ⤵️", reply_markup=buttons_menu)
     await Test.Q_for_get_money.set()
+    await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
 
 @dp.message_handler(text="⬅️ Назад в меню")
@@ -98,6 +110,8 @@ async def GetMoney1(message: types.Message, state: FSMContext):
 Введите сумму вывода ♻️
 Баланс : {info[1]}""")
                 await Test.Q_for_get_money2.set()
+                await asyncio.create_task(
+                    auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
         except:
             await message.answer("Некорретный номер карты", reply_markup=main_keyboard)
             await state.finish()

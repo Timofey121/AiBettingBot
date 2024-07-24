@@ -1,3 +1,5 @@
+import asyncio
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
@@ -11,7 +13,14 @@ from keyboards.default.back_to_menu import buttons_menu
 from loader import dp
 from states import Test
 from utils.db_api.PostgreSQL import select_all_users, count_users, subscriber_exists, select_blocked_users, \
-    update_blocked_users, get_lk, update_only_balance
+    update_blocked_users, get_lk, update_only_balance, add_stop
+
+
+async def auto_finish_state(id, state: FSMContext):
+    await asyncio.sleep(600)
+    await dp.bot.send_message(id, "За долгое бездействие, Вы перенаправлены в главное меню.",
+                              reply_markup=main_keyboard)
+    await state.finish()
 
 
 @dp.message_handler(Command("admin"))
@@ -19,6 +28,7 @@ async def notification(message: types.Message):
     if str(message.from_user.id) in ADMINS or str(message.from_user.id) in CREATOR:
         await message.answer('Выберите нужную команду (cм.ниже).', reply_markup=keyboard_4)
         await Test.Q_for_admin_1.set()
+        await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
     else:
         text = ("Неизвестная команда, воспользуйтесь меню",
                 )
@@ -64,6 +74,7 @@ async def answer(message: types.Message, state: FSMContext):
             for i in range(len(c)):
                 await message.answer("\n".join(c[i]), reply_markup=buttons_menu)
             await Test.Q_for_admin_2.set()
+            await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
         elif message.text == "Разблокировать пользователя!":
             await message.answer(f"Введите id пользователя, которого хотите заблокировать",
@@ -84,10 +95,12 @@ async def answer(message: types.Message, state: FSMContext):
                 for i in range(len(c)):
                     await message.answer("\n".join(c[i]), reply_markup=buttons_menu)
                 await Test.Q_for_admin_3.set()
+                await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
         elif message.text == "Отправить пользователям сообщение!":
             await message.answer(f"Введите сообщение для пользователей!", reply_markup=buttons_menu)
             await Test.Q_for_admin_4.set()
+            await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
         elif message.text == "Изменить баланс пользователю!":
             dat = list(await select_all_users())
@@ -105,6 +118,7 @@ async def answer(message: types.Message, state: FSMContext):
             for i in range(len(c)):
                 await message.answer("\n".join(c[i]), reply_markup=buttons_menu)
             await Test.Q_for_admin_5.set()
+            await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
     except Exception as ex:
         await state.finish()
@@ -119,6 +133,7 @@ async def block2(message: types.Message, state: FSMContext):
         await state.update_data(TgId=message.text)
         await message.answer(f"Введите новый баланс пользователя!", reply_markup=buttons_menu)
         await Test.Q_for_admin_6.set()
+        await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
 
 @dp.message_handler(state=Test.Q_for_admin_6)
@@ -143,6 +158,9 @@ async def block2(message: types.Message, state: FSMContext):
     else:
         try:
             await update_blocked_users(message.text, 1)
+            await update_only_balance(message.text, 0)
+            await update_only_balance(message.text, 0)
+            await add_stop(message.text, 'yes')
             await message.answer(
                 f"Пользователь {list(await subscriber_exists(message.text))[0][1]} -> ID = {message.text} - ЗАБЛОКИРОВАН",
                 reply_markup=main_keyboard)

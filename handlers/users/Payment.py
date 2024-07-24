@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import string
 from datetime import datetime, timedelta
@@ -51,6 +52,12 @@ min_currency = {
 }
 
 
+async def auto_finish_state(id, state: FSMContext):
+    await asyncio.sleep(600)
+    await dp.bot.send_message(id, "Из-за длительного бездействия вы были перенаправлены в главное меню.", reply_markup=main_keyboard)
+    await state.finish()
+
+
 @dp.message_handler(text="📲Пополнение")
 async def Payment1(message: types.Message):
     if int(list(await subscriber_exists(message.from_user.id))[0][-1]) != 1:
@@ -61,6 +68,7 @@ async def Payment1(message: types.Message):
             f"Введите сумму на пополнение. Минимальная сумма для пополнения {min_currency[curr]}{curr}",
             reply_markup=buttons_menu)
         await Test.Q_for_payment.set()
+        await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
     else:
         await message.answer(f"К сожалению, Вы ЗАБЛОКИРОВАНЫ!")
 
@@ -145,7 +153,7 @@ async def Dnenne(message: types.Message):
                 "К сожалению, Вы не оплатили. Или, возможно, платеж еще обрабатвыется, как только он будет "
                 "успешен - деньги автоматически поступят к Вам на счет.", reply_markup=main_keyboard)
     except Exception as ex:
-        await dp.bot.send_message(950866927, ex)
+        pass
 
 
 @dp.message_handler(text="Отмена платежа")

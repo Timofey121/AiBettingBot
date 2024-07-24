@@ -1,4 +1,5 @@
 # -*- coding: utf8 -*-
+import asyncio
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
@@ -10,6 +11,13 @@ from keyboards.default.back_to_menu import buttons_menu
 from loader import dp
 from states import Test
 from utils.db_api.PostgreSQL import subscriber_exists, get_trans
+
+
+async def auto_finish_state(id, state: FSMContext):
+    await asyncio.sleep(600)
+    await dp.bot.send_message(id, "Из-за длительного бездействия вы были перенаправлены в главное меню.",
+                              reply_markup=main_keyboard)
+    await state.finish()
 
 
 @dp.message_handler(text="Support🧑‍💻", state=None)
@@ -25,14 +33,17 @@ async def technical_support(message: types.Message):
 Support""")
         else:
             if message.from_user.username is None:
-                await message.answer(f"Привет, к сожалению, мы не сможем ответить Вам, т.к. у Вас нет имени пользователя!"
-                                     f"Укажите пожалуйста его в настройках, чтобы мы смогли с Вами связаться!")
+                await message.answer(
+                    f"Привет, к сожалению, мы не сможем ответить Вам, т.к. у Вас нет имени пользователя!"
+                    f"Укажите пожалуйста его в настройках, чтобы мы смогли с Вами связаться!")
                 photo = open('handlers/users/img.png', 'rb')
                 await message.answer_photo(photo, reply_markup=main_keyboard)
             else:
                 await message.answer("Привет, расскажи в чем проблема? Мы ответим Вам, как только закончим"
                                      " с предыдущем вопросом!", reply_markup=buttons_menu)
                 await Test.Q_for_tech_support.set()
+                await asyncio.create_task(
+                    auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
     else:
         await message.answer(f"К сожалению, Вы ЗАБЛОКИРОВАНЫ!")
 
