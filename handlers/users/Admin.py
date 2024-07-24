@@ -7,6 +7,7 @@ from aiogram.types import ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold
 
 from data.config import ADMINS, CREATOR
+from handlers.users.GeneralFunction import auto_finish_state
 from keyboards.default.admin_commands import keyboard_4
 from keyboards.default.buttons_menu import main_keyboard
 from keyboards.default.back_to_menu import buttons_menu
@@ -14,13 +15,6 @@ from loader import dp
 from states import Test
 from utils.db_api.PostgreSQL import select_all_users, count_users, subscriber_exists, select_blocked_users, \
     update_blocked_users, get_lk, update_only_balance, add_stop
-
-
-async def auto_finish_state(id, state: FSMContext):
-    await asyncio.sleep(600)
-    await dp.bot.send_message(id, "За долгое бездействие, Вы перенаправлены в главное меню.",
-                              reply_markup=main_keyboard)
-    await state.finish()
 
 
 @dp.message_handler(Command("admin"))
@@ -74,7 +68,8 @@ async def answer(message: types.Message, state: FSMContext):
             for i in range(len(c)):
                 await message.answer("\n".join(c[i]), reply_markup=buttons_menu)
             await Test.Q_for_admin_2.set()
-            await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
+            await asyncio.create_task(
+                auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
         elif message.text == "Разблокировать пользователя!":
             await message.answer(f"Введите id пользователя, которого хотите заблокировать",
@@ -95,12 +90,14 @@ async def answer(message: types.Message, state: FSMContext):
                 for i in range(len(c)):
                     await message.answer("\n".join(c[i]), reply_markup=buttons_menu)
                 await Test.Q_for_admin_3.set()
-                await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
+                await asyncio.create_task(
+                    auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
         elif message.text == "Отправить пользователям сообщение!":
             await message.answer(f"Введите сообщение для пользователей!", reply_markup=buttons_menu)
             await Test.Q_for_admin_4.set()
-            await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
+            await asyncio.create_task(
+                auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
         elif message.text == "Изменить баланс пользователю!":
             dat = list(await select_all_users())
@@ -118,7 +115,8 @@ async def answer(message: types.Message, state: FSMContext):
             for i in range(len(c)):
                 await message.answer("\n".join(c[i]), reply_markup=buttons_menu)
             await Test.Q_for_admin_5.set()
-            await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
+            await asyncio.create_task(
+                auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
 
     except Exception as ex:
         await state.finish()

@@ -12,6 +12,7 @@ from aiogram.utils.markdown import hbold, hunderline, hlink
 import os, shutil
 
 from data.config import SkyPayToken, CREATOR, ADMINS
+from handlers.users.GeneralFunction import auto_finish_state, min_currency, coeff
 from keyboards.default.back_to_menu import buttons_menu
 from keyboards.default.buttons_menu import main_keyboard
 from keyboards.default.done import done
@@ -20,42 +21,12 @@ from states import Test
 from utils.db_api.PostgreSQL import subscriber_exists, get_trans, update_balance, delete_trans, select_all_rev, get_lk, \
     update_rev_balance, add_stop, add_summ, get_payment, update_only_balance, delete_payment, get_currency, add_currency
 
-coeff = {
-    "rub-kzt": 5.26,
-    "kzt-rub": 0.19,
-    "rub-uah": 0.4672,
-    "uah-rub": 2.14,
-    "kzt-uah": 0.0868,
-    "uah-kzt": 11.51,
-    "uah-uah": 1,
-    "rub-rub": 1,
-    "kzt-kzt": 1,
-}
-
 
 def random_alphanumeric_string(length):
     return ''.join(
         random.choice(string.digits + string.ascii_letters)
         for _ in range(length)
     )
-
-
-min_currency = {
-    "rub": 1000,
-    "usd": 8,
-    "kzt": 3000,
-    "uah": 500,
-    "byn": 20,
-    "tjs": 70,
-    "azn": 10,
-    "uzs": 50000,
-}
-
-
-async def auto_finish_state(id, state: FSMContext):
-    await asyncio.sleep(600)
-    await dp.bot.send_message(id, "Из-за длительного бездействия вы были перенаправлены в главное меню.", reply_markup=main_keyboard)
-    await state.finish()
 
 
 @dp.message_handler(text="📲Пополнение")

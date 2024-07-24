@@ -14,10 +14,12 @@ from utils.db_api.PostgreSQL import subscriber_exists, get_trans
 
 
 async def auto_finish_state(id, state: FSMContext):
-    await asyncio.sleep(600)
-    await dp.bot.send_message(id, "Из-за длительного бездействия вы были перенаправлены в главное меню.",
-                              reply_markup=main_keyboard)
-    await state.finish()
+    await asyncio.sleep(5)
+    current_state = await state.get_state()
+    if current_state is not None:
+        await dp.bot.send_message(id, "Из-за длительного бездействия вы были перенаправлены в главное меню.",
+                                  reply_markup=main_keyboard)
+        await state.finish()
 
 
 @dp.message_handler(text="Support🧑‍💻", state=None)

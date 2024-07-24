@@ -10,6 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 from aiogram.utils.markdown import hbold, hunderline, hlink
 
+from handlers.users.GeneralFunction import auto_finish_state
 from keyboards.default.back_to_menu import buttons_menu
 from keyboards.default.buttons_menu import main_keyboard
 from keyboards.default.done import done
@@ -19,11 +20,6 @@ from states import Test
 from utils.db_api.PostgreSQL import subscriber_exists, get_trans, update_balance, delete_trans, select_all_rev, get_lk, \
     update_rev_balance, add_stop, update_only_balance, add_get_money
 
-
-async def auto_finish_state(id, state: FSMContext):
-    await asyncio.sleep(600)
-    await dp.bot.send_message(id, "Из-за длительного бездействия вы были перенаправлены в главное меню.", reply_markup=main_keyboard)
-    await state.finish()
 
 @dp.message_handler(text="Вывод♻️")
 async def GetMoney(message: types.Message):
@@ -64,7 +60,6 @@ async def GetMoneyQiwi(message: types.Message):
     await message.answer("Напишите номер Qiwi ⤵️", reply_markup=buttons_menu)
     await Test.Q_for_get_money.set()
     await asyncio.create_task(auto_finish_state(message.from_user.id, dp.current_state(user=message.from_user.id)))
-
 
 
 @dp.message_handler(text="YooMoney")
@@ -133,4 +128,3 @@ async def GetMoney2(message: types.Message, state: FSMContext):
     except:
         await message.answer("Введена некорректная сумма. Повтори запрос позже", reply_markup=main_keyboard)
     await state.finish()
-

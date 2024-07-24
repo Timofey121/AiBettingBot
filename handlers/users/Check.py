@@ -98,5 +98,8 @@ async def check(dp):
                 await delete_payment(tg_id, id)
                 await update_only_balance(tg_id, int(balance) + int(summ))
                 await dp.bot.send_message(tg_id, "Оплата успешно прошла", reply_markup=main_keyboard)
+            else:
+                if str(response.json()["status"]) == "3":
+                    await delete_payment(tg_id, id)
         except:
             pass
